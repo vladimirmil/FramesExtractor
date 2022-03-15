@@ -55,10 +55,9 @@ def video_to_frames(inputLocation, outputLocation, name):
     else:
         end = int(input[1] * videoFps)
     
+    # Set progress bar maximum value
     framesToExtract = end - start
     progressBar['maximum'] = framesToExtract
-    print(framesToExtract)
-    #framesToExtract = framesToExtract
 
     # If start or end are greater than video lenght, set it to video lenght
     if start > videoLenght:
