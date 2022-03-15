@@ -1,13 +1,19 @@
+# App can become unresponsive if video is high resolution video
+# Despite being unresponsive, it is working
+
+from statistics import mode
 import cv2
 import datetime
 import os
 from tkinter import *
 from tkinter import filedialog
+from tkinter import ttk
 
 root = Tk()
 root.title("Video Frames Extractor")
-root.minsize(340, 250)
+root.minsize(340, 300)
 frame = Frame(root)
+
 
 text = StringVar()
 fileInfoText = StringVar()
@@ -49,6 +55,11 @@ def video_to_frames(inputLocation, outputLocation, name):
     else:
         end = int(input[1] * videoFps)
     
+    framesToExtract = end - start
+    progressBar['maximum'] = framesToExtract
+    print(framesToExtract)
+    #framesToExtract = framesToExtract
+
     # If start or end are greater than video lenght, set it to video lenght
     if start > videoLenght:
         start = videoLenght
@@ -65,9 +76,14 @@ def video_to_frames(inputLocation, outputLocation, name):
         if count >= start and count <= end:
             cv2.imwrite(outputLocation + "/" +name + str(count+1) + ".jpg", frame)
             extractedFrameCount += 1
+
+        # Update progressbar    
+        updateProgressBar()
+        root.update_idletasks()
+
         count = count + 1
         # If there are no more frames left
-        if (count > (video_length-1)):
+        if (count > video_length):
             # Log the time again
             timeEnd = datetime.datetime.now()
             # Release the feed
@@ -112,6 +128,7 @@ def open():
     # Reset labels
     workingText.set("")
     progressText.set("")
+    progressBar['value'] = 0
     setInput(inputLoc, outputLoc, name)
     
 
@@ -166,16 +183,28 @@ def getInput():
     return input
 
 
-openFileButton = Button(frame, width=10, height=1, text="Open File", command=open).grid(row=0, column=0)
-startProcessButton = Button(frame, width=10, height=1, text="Start", command=startExtracting).grid(row=0, column=1)
+
+def updateProgressBar():
+    progressBar['value'] += 1
 
 
-startLabel = Label(frame, text="Start time [s]").grid(row=1, column=0)
-endLabel = Label(frame, text="End time [s]").grid(row=2, column=0)
+def openOutputFolder():
+    os.system("start "+ str(os.path.dirname(os.path.abspath(__file__))) + '\output')
+
+
+openFileButton = Button(frame, width=10, height=1, text="Open File", command=open).grid(row=0, column=0, pady=2)
+startProcessButton = Button(frame, width=10, height=1, text="Start", command=startExtracting).grid(row=0, column=1, pady=2)
+
+
+progressBar = ttk.Progressbar(frame, orient=HORIZONTAL,mode="determinate", length=340)
+progressBar.grid(row=1, column=0, columnspan = 2, pady=10)
+
+startLabel = Label(frame, text="Start time [s]").grid(row=2, column=0)
+endLabel = Label(frame, text="End time [s]").grid(row=3, column=0)
 startInput = Entry(frame)
-startInput.grid(row=1, column=1)
+startInput.grid(row=2, column=1)
 endInput = Entry(frame)
-endInput.grid(row=2, column=1)
+endInput.grid(row=3, column=1)
 
 frame.pack()
 
@@ -183,7 +212,6 @@ openedFileLabel = Label(root, textvariable=text).pack()
 openedFileInfoLabel = Label(root, textvariable=fileInfoText).pack()
 workingLabel = Label(root, textvariable=workingText).pack()
 progressLabel = Label(root, textvariable=progressText).pack()
-
-
+openOutputFolderButton = Button(root, text="Open output folder", command=openOutputFolder).pack()
 
 root.mainloop()
